@@ -3,6 +3,9 @@ from flask import request
 import json
 import pickle
 import pandas as pd
+import os
+
+LOADED_MODEL = pickle.load(open('finalized_model.pickle', 'rb'))
 
 app = Flask(__name__)
 
@@ -33,27 +36,30 @@ def predict_single():
     transmission_Manual = int(request.args.get('transmission_Manual'))
 
     # load model from file
-    loaded_model = pickle.load(open('finalized_model.pickle', 'rb'))
     names = [year, km_driven, owner, name_Chevrolet, name_Ford,
              name_Honda, name_Hyundai, name_Mahindra, name_Maruti,
              name_Nissan, name_Other, name_Renault, name_Skoda, name_Tata,
              name_Toyota, name_Volkswagen, fuel_Diesel, fuel_Other,
              fuel_Petrol, seller_type_Dealer, seller_type_Individual,
              transmission_Automatic, transmission_Manual]
-    y_pred = loaded_model.predict([names])
+
+    y_pred = LOADED_MODEL.predict([names])
     return str(y_pred[0])
 
 
 @app.route("/json", methods=["POST"])
 def Multiple_prediction():
     req = request.get_json()
-    loaded_model = pickle.load(open('finalized_model.pickle', 'rb'))
     df_req = pd.DataFrame.from_dict(req)
-    y_pred = loaded_model.predict(df_req)
+    y_pred = LOADED_MODEL.predict(df_req)
     y_pred = y_pred.tolist()
     response = json.dumps(y_pred)
     return str(response)
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = os.environ.get('PORT')
+    if port:
+        app.run(host='0.0.0.0', port=int(port))
+    else:
+        app.run()
