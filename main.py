@@ -11,6 +11,7 @@ app = Flask(__name__)
 
 @app.route('/predict_single')
 def predict_single():
+    app.logger.info('Predict single called')
     year = int(request.args.get('year'))
     km_driven = int(request.args.get('km_driven'))
     owner = int(request.args.get('owner'))
@@ -44,6 +45,7 @@ def predict_single():
              transmission_Automatic, transmission_Manual]
 
     y_pred = LOADED_MODEL.predict([names])
+    app.logger.info('Predict single finished')
     return str(y_pred[0])
 
 
@@ -59,6 +61,7 @@ def Multiple_prediction():
 
 if __name__ == '__main__':
     port = os.environ.get('PORT')
+    app.logger.info('App staring...')
     if port:
         app.run(host='0.0.0.0', port=int(port))
     else:
